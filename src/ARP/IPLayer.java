@@ -7,42 +7,12 @@ import ARP.BaseLayer;
 
 public class IPLayer implements BaseLayer{
 	public int nUpperLayerCount = 0;
+	public int nUnderLayerCount = 0;
 	public String pLayerName = null;
-	public BaseLayer p_UnderLayer = null;	
+	//public BaseLayer p_UnderLayer = null;
+	public ArrayList<BaseLayer> p_UnderLayer = new ArrayList<BaseLayer>();
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
-	@Override
-	public String GetLayerName() {
-		return pLayerName;
-	}
-	@Override
-	public BaseLayer GetUnderLayer() {
-		if (p_UnderLayer == null)
-			return null;
-		return p_UnderLayer;
-	}
-	@Override
-	public BaseLayer GetUpperLayer(int nindex) {
-		if (nindex < 0 || nindex > nUpperLayerCount || nUpperLayerCount < 0)
-			return null;
-		return p_aUpperLayer.get(nindex);
-	}
-	@Override
-	public void SetUnderLayer(BaseLayer pUnderLayer) {
-		if (p_UnderLayer == null)
-			return;
-		this.p_UnderLayer = pUnderLayer;
-	}
-	@Override
-	public void SetUpperLayer(BaseLayer pUpperLayer) {
-		if (pUpperLayer == null)
-			return;
-		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
-	}
-	@Override
-	public void SetUpperUnderLayer(BaseLayer pUULayer) {
-		this.SetUpperLayer(pUULayer);
-		pUULayer.SetUnderLayer(this);
-	}
+	
 	
 	private class _IP_HEADER {
 		_IP_ADDR ip_dstaddr; //ip address of source
@@ -111,7 +81,7 @@ public class IPLayer implements BaseLayer{
 	public boolean Send(byte[] input, int length) {
 		
 		byte[] send = ObjToByte(m_sHeader, input, length);
-		((ARPLayer)this.GetUnderLayer()).Send(send, send.length);
+		((ARPLayer)this.GetUnderLayer(1)).Send(send, send.length);
 		return true;
 	}
 	
@@ -147,7 +117,7 @@ public class IPLayer implements BaseLayer{
 		StringTokenizer st = new StringTokenizer(address, ".");
 		
 		for(int i = 0; i < 4; i++)
-			m_sHeader.ip_srcaddr.addr[i] = (byte) Integer.parseInt(st.nextToken());
+			m_sHeader.ip_dstaddr.addr[i] = (byte) Integer.parseInt(st.nextToken());
 	}
 	
 	public void SetIpSrcAddress(String address) {
@@ -176,5 +146,61 @@ public class IPLayer implements BaseLayer{
 	
 	
 	
+	@Override
+	public String GetLayerName() {
+		// TODO Auto-generated method stub
+		return pLayerName;
+	}
+
+	@Override
+	public BaseLayer GetUnderLayer() {
+		// TODO Auto-generated method stub
+		if (p_UnderLayer == null)
+			return null;
+		return p_UnderLayer.get(0);
+	}
+	
+	public BaseLayer GetUnderLayer(int i) {
+		// TODO Auto-generated method stub
+		if (i < 0 || i > nUnderLayerCount || nUnderLayerCount < 0)
+			return null;
+		return this.p_UnderLayer.get(i);
+	}
+
+	@Override
+	public BaseLayer GetUpperLayer(int nindex) {
+		// TODO Auto-generated method stub
+		if (nindex < 0 || nindex > nUpperLayerCount || nUpperLayerCount < 0)
+			return null;
+		return p_aUpperLayer.get(nindex);
+	}
+
+	@Override
+	public void SetUnderLayer(BaseLayer pUnderLayer) {
+		// TODO Auto-generated method stub
+//		if (pUnderLayer == null)
+//			return;
+//		p_UnderLayer = pUnderLayer;
+//		
+		if (pUnderLayer == null)
+			return;
+		
+		this.p_UnderLayer.add(nUnderLayerCount++, pUnderLayer);
+	}
+
+	@Override
+	public void SetUpperLayer(BaseLayer pUpperLayer) {
+		// TODO Auto-generated method stub
+		if (pUpperLayer == null)
+			return;
+		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
+	}
+
+	@Override
+	public void SetUpperUnderLayer(BaseLayer pUULayer) {
+		// TODO Auto-generated method stub
+		this.SetUpperLayer(pUULayer);
+		pUULayer.SetUnderLayer(this);
+	}
 
 }

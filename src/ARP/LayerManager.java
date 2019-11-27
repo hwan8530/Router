@@ -14,25 +14,32 @@ public class LayerManager {
 			this.next = null;
 		}
 	}
+
 	_NODE mp_sListHead;
 	_NODE mp_sListTail;
+
 	private int m_nTop;
 	private int m_nLayerCount;
+
 	private ArrayList<BaseLayer> mp_Stack = new ArrayList<BaseLayer>();
 	private ArrayList<BaseLayer> mp_aLayers = new ArrayList<BaseLayer>();
+
 	public LayerManager() {
 		m_nLayerCount = 0;
 		mp_sListHead = null;
 		mp_sListTail = null;
 		m_nTop = -1;
 	}
+
 	public void AddLayer(BaseLayer pLayer) {
 		mp_aLayers.add(m_nLayerCount++, pLayer);
 		// m_nLayerCount++;
 	}
+
 	public BaseLayer GetLayer(int nindex) {
 		return mp_aLayers.get(nindex);
 	}
+
 	public BaseLayer GetLayer(String pName) {
 		for (int i = 0; i < m_nLayerCount; i++) {
 			if (pName.compareTo(mp_aLayers.get(i).GetLayerName()) == 0)
@@ -40,15 +47,19 @@ public class LayerManager {
 		}
 		return null;
 	}
+
 	public void ConnectLayers(String pcList) {
 		MakeList(pcList);
 		LinkLayer(mp_sListHead);
 	}
+
 	private void MakeList(String pcList) {
 		StringTokenizer tokens = new StringTokenizer(pcList, " ");
+
 		for (; tokens.hasMoreElements();) {
 			_NODE pNode = AllocNode(tokens.nextToken());
 			AddNode(pNode);
+
 		}
 	}
 
@@ -117,6 +128,7 @@ public class LayerManager {
 			pNode = pNode.next;
 
 		}
+		System.out.println("");
 	}
 
 }
