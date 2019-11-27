@@ -12,7 +12,30 @@ public class IPLayer implements BaseLayer{
 	//public BaseLayer p_UnderLayer = null;
 	public ArrayList<BaseLayer> p_UnderLayer = new ArrayList<BaseLayer>();
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
+	public static ArrayList<RoutingTable> routingTable = new ArrayList<RoutingTable>(); // routingTable
 	
+	private class RoutingTable {
+		_IP_ADDR dstAddress;
+		_IP_ADDR subnetMask;
+		_IP_ADDR gateway;
+		_ETHERNET_ADDR ethernetAddress;
+		
+		String flag;
+		String lanCardName;
+		int metric;
+		
+		public RoutingTable() {
+			// TODO Auto-generated constructor stub
+			dstAddress = new _IP_ADDR();
+			subnetMask = new _IP_ADDR();
+			gateway = new _IP_ADDR();
+			ethernetAddress = new _ETHERNET_ADDR();
+			
+			flag = "";
+			lanCardName = "";
+			metric = 0;
+		}
+	}
 	
 	private class _IP_HEADER {
 		_IP_ADDR ip_dstaddr; //ip address of source
@@ -55,6 +78,18 @@ public class IPLayer implements BaseLayer{
 		}
 	}
 	
+	public void setRoutingTable(String ip, String mask, String gate, String f, String lan, String lanMac) {
+		// setRoutingTable from GUI
+		RoutingTable temp = new RoutingTable();
+		temp.dstAddress.addr = this.hexStringToByteArray(ip);
+		temp.subnetMask.addr = this.hexStringToByteArray(mask);
+		temp.gateway.addr = this.hexStringToByteArray(gate);
+		temp.flag = f;
+		temp.lanCardName = lan;
+		temp.ethernetAddress.addr = this.hexStringToByteArray(lanMac);
+		
+		this.routingTable.add(temp);
+	}
 	
 	_IP_HEADER m_sHeader = new _IP_HEADER();
 	
@@ -75,8 +110,6 @@ public class IPLayer implements BaseLayer{
 		
 		m_sHeader.ip_verlen[0] = (byte) 0x04;//IPv4
 	}
-
-
 
 	public boolean Send(byte[] input, int length) {
 		
@@ -202,5 +235,16 @@ public class IPLayer implements BaseLayer{
 		this.SetUpperLayer(pUULayer);
 		pUULayer.SetUnderLayer(this);
 	}
+	
+	public static byte[] hexStringToByteArray(String s) {
+		int len = s.length();
+		byte[] data = new byte[len / 2];
 
+		for (int i = 0; i < len; i += 2) {
+			data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
+		}
+
+		return data;
+	}
+	
 }
