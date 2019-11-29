@@ -176,7 +176,7 @@ public class NILayer implements BaseLayer {
 		return this.ipAddr;
 	}
 	
-	public byte GetMacAddress(){
+	public byte[] GetMacAddress(){
 		return this.macAddr;
 	}
 	
