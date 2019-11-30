@@ -7,41 +7,34 @@ import ARP.BaseLayer;
 
 public class IPLayer implements BaseLayer{
 	public int nUpperLayerCount = 0;
+	public int nUnderLayerCount = 0;
 	public String pLayerName = null;
-	public BaseLayer p_UnderLayer = null;	
+	//public BaseLayer p_UnderLayer = null;
+	public ArrayList<BaseLayer> p_UnderLayer = new ArrayList<BaseLayer>();
 	public ArrayList<BaseLayer> p_aUpperLayer = new ArrayList<BaseLayer>();
-	@Override
-	public String GetLayerName() {
-		return pLayerName;
-	}
-	@Override
-	public BaseLayer GetUnderLayer() {
-		if (p_UnderLayer == null)
-			return null;
-		return p_UnderLayer;
-	}
-	@Override
-	public BaseLayer GetUpperLayer(int nindex) {
-		if (nindex < 0 || nindex > nUpperLayerCount || nUpperLayerCount < 0)
-			return null;
-		return p_aUpperLayer.get(nindex);
-	}
-	@Override
-	public void SetUnderLayer(BaseLayer pUnderLayer) {
-		if (p_UnderLayer == null)
-			return;
-		this.p_UnderLayer = pUnderLayer;
-	}
-	@Override
-	public void SetUpperLayer(BaseLayer pUpperLayer) {
-		if (pUpperLayer == null)
-			return;
-		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
-	}
-	@Override
-	public void SetUpperUnderLayer(BaseLayer pUULayer) {
-		this.SetUpperLayer(pUULayer);
-		pUULayer.SetUnderLayer(this);
+	public static ArrayList<RoutingTable> routingTable = new ArrayList<RoutingTable>(); // routingTable
+	
+	private class RoutingTable {
+		_IP_ADDR dstAddress;
+		_IP_ADDR subnetMask;
+		_IP_ADDR gateway;
+		_ETHERNET_ADDR ethernetAddress;
+		
+		String flag;
+		String lanCardName;
+		int metric;
+		
+		public RoutingTable() {
+			// TODO Auto-generated constructor stub
+			dstAddress = new _IP_ADDR();
+			subnetMask = new _IP_ADDR();
+			gateway = new _IP_ADDR();
+			ethernetAddress = new _ETHERNET_ADDR();
+			
+			flag = "";
+			lanCardName = "";
+			metric = 0;
+		}
 	}
 	
 	private class _IP_HEADER {
@@ -85,6 +78,18 @@ public class IPLayer implements BaseLayer{
 		}
 	}
 	
+	public void setRoutingTable(String ip, String mask, String gate, String f, String lan, String lanMac) {
+		// setRoutingTable from GUI
+		RoutingTable temp = new RoutingTable();
+		temp.dstAddress.addr = this.hexStringToByteArray(ip);
+		temp.subnetMask.addr = this.hexStringToByteArray(mask);
+		temp.gateway.addr = this.hexStringToByteArray(gate);
+		temp.flag = f;
+		temp.lanCardName = lan;
+		temp.ethernetAddress.addr = this.hexStringToByteArray(lanMac);
+		
+		this.routingTable.add(temp);
+	}
 	
 	_IP_HEADER m_sHeader = new _IP_HEADER();
 	
@@ -106,12 +111,10 @@ public class IPLayer implements BaseLayer{
 		m_sHeader.ip_verlen[0] = (byte) 0x04;//IPv4
 	}
 
-
-
 	public boolean Send(byte[] input, int length) {
 		
 		byte[] send = ObjToByte(m_sHeader, input, length);
-		((ARPLayer)this.GetUnderLayer()).Send(send, send.length);
+		((ARPLayer)this.GetUnderLayer(1)).Send(send, send.length);
 		return true;
 	}
 	
@@ -147,7 +150,7 @@ public class IPLayer implements BaseLayer{
 		StringTokenizer st = new StringTokenizer(address, ".");
 		
 		for(int i = 0; i < 4; i++)
-			m_sHeader.ip_srcaddr.addr[i] = (byte) Integer.parseInt(st.nextToken());
+			m_sHeader.ip_dstaddr.addr[i] = (byte) Integer.parseInt(st.nextToken());
 	}
 	
 	public void SetIpSrcAddress(String address) {
@@ -176,5 +179,72 @@ public class IPLayer implements BaseLayer{
 	
 	
 	
+	@Override
+	public String GetLayerName() {
+		// TODO Auto-generated method stub
+		return pLayerName;
+	}
 
+	@Override
+	public BaseLayer GetUnderLayer() {
+		// TODO Auto-generated method stub
+		if (p_UnderLayer == null)
+			return null;
+		return p_UnderLayer.get(0);
+	}
+	
+	public BaseLayer GetUnderLayer(int i) {
+		// TODO Auto-generated method stub
+		if (i < 0 || i > nUnderLayerCount || nUnderLayerCount < 0)
+			return null;
+		return this.p_UnderLayer.get(i);
+	}
+
+	@Override
+	public BaseLayer GetUpperLayer(int nindex) {
+		// TODO Auto-generated method stub
+		if (nindex < 0 || nindex > nUpperLayerCount || nUpperLayerCount < 0)
+			return null;
+		return p_aUpperLayer.get(nindex);
+	}
+
+	@Override
+	public void SetUnderLayer(BaseLayer pUnderLayer) {
+		// TODO Auto-generated method stub
+//		if (pUnderLayer == null)
+//			return;
+//		p_UnderLayer = pUnderLayer;
+//		
+		if (pUnderLayer == null)
+			return;
+		
+		this.p_UnderLayer.add(nUnderLayerCount++, pUnderLayer);
+	}
+
+	@Override
+	public void SetUpperLayer(BaseLayer pUpperLayer) {
+		// TODO Auto-generated method stub
+		if (pUpperLayer == null)
+			return;
+		this.p_aUpperLayer.add(nUpperLayerCount++, pUpperLayer);
+	}
+
+	@Override
+	public void SetUpperUnderLayer(BaseLayer pUULayer) {
+		// TODO Auto-generated method stub
+		this.SetUpperLayer(pUULayer);
+		pUULayer.SetUnderLayer(this);
+	}
+	
+	public static byte[] hexStringToByteArray(String s) {
+		int len = s.length();
+		byte[] data = new byte[len / 2];
+
+		for (int i = 0; i < len; i += 2) {
+			data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
+		}
+
+		return data;
+	}
+	
 }
